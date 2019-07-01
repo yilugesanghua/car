@@ -29,20 +29,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.14.11"
-  convert:
-    dependency: "direct main"
-    description:
-      name: convert
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.1.1"
-  crypto:
-    dependency: "direct main"
-    description:
-      name: crypto
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.0.6"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -55,13 +41,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_native_web:
-    dependency: "direct main"
-    description:
-      name: flutter_native_web
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -88,13 +67,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.6"
-  mime:
+  oktoast:
     dependency: "direct main"
     description:
-      name: mime
+      name: oktoast
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.9.6+3"
+    version: "2.1.9"
   path:
     dependency: transitive
     description:
@@ -170,13 +149,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.6"
-  uuid:
+  url_launcher:
     dependency: "direct main"
     description:
-      name: uuid
+      name: url_launcher
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.2"
+    version: "5.0.3"
   vector_math:
     dependency: transitive
     description:

@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:oktoast/oktoast.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -11,15 +14,6 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
           primarySwatch: Colors.blue,
         ),
         home: WebViewPage(),
@@ -40,7 +34,11 @@ class WebViewPageState extends State<WebViewPage> {
   Timer _timer;
   int progress = 0;
   WebViewController _webViewController;
-  String _curUrl ;
+  String _curUrl;
+
+  static Future<void> pop() async {
+    await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+  }
 
   JavascriptChannel _alertJavascriptChannel(BuildContext context) {
     return JavascriptChannel(
@@ -87,67 +85,77 @@ class WebViewPageState extends State<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter WebView example'),
-        bottom: PreferredSize(
-          child: _progressBar(),
-          preferredSize: Size.fromHeight(2.0),
-        ),
-      ),
-      body: Builder(builder: (BuildContext context) {
-        Future<bool> _onWillPop() =>
-            _showMessage(context, "信息", "返回键被点击，将要返回第一页");
-        return WillPopScope(
-          onWillPop: _onWillPop,
-          child: WebView(
-            initialUrl: 'http://www.clwztc.com/',
-            javascriptMode: JavascriptMode.unrestricted,
-            onWebViewCreated: (WebViewController webViewController) {
-              _webViewController = webViewController;
-              _controller.complete(webViewController);
-            },
-            javascriptChannels: <JavascriptChannel>[
-              _alertJavascriptChannel(context),
-            ].toSet(),
-            navigationDelegate: (NavigationRequest request) {
-              setState(() {
-                isLoading = true;
-                progress = 0;
-                _simulateProgress();
-              });
-              _curUrl=request.url;
-              print('allowing navigation to $request');
-              return NavigationDecision.navigate;
-            },
-            onPageFinished: (String url) {
-              setState(() {
-                isLoading = false;
-              });
-              print('Page finished loading: $url');
-            },
+    return new WillPopScope(
+        onWillPop: () {
+          if (_webViewController != null) {
+            _webViewController.canGoBack().then((value) {
+              if (value) {
+                print("_webViewController  can   go back");
+                _webViewController.goBack();
+              } else {
+                print("_webViewController  can not  go back");
+//                Navigator.pop(context);
+                pop();
+              }
+            });
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Flutter WebView example'),
+            bottom: PreferredSize(
+              child: _progressBar(),
+              preferredSize: Size.fromHeight(2.0),
+            ),
           ),
-        );
-      }),
-    );
+          body: Builder(builder: (BuildContext context) {
+            return WebView(
+              initialUrl: 'http://www.clwztc.com/wap/',
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (WebViewController webViewController) {
+                _webViewController = webViewController;
+                _controller.complete(webViewController);
+              },
+              javascriptChannels: <JavascriptChannel>[
+                _alertJavascriptChannel(context),
+              ].toSet(),
+              navigationDelegate: (NavigationRequest request) {
+                if (request != null && request.url.startsWith("tel:")) {
+                  doCall(request.url);
+                  return NavigationDecision.prevent;
+                }
+                if (request != null &&
+                    request.url == "http://www.clwztc.com/wap/Book.asp") {
+                  showToast("正在努力建设中...");
+                  return NavigationDecision.prevent;
+                }
+                setState(() {
+                  isLoading = true;
+                  progress = 0;
+                  _simulateProgress();
+                });
+                _curUrl = request.url;
+                print('allowing navigation to $request');
+
+                return NavigationDecision.navigate;
+              },
+              onPageFinished: (String url) {
+                setState(() {
+                  isLoading = false;
+                });
+                print('Page finished loading: $url');
+              },
+            );
+          }),
+        ));
   }
 
-  Future<void> _showMessage(
-      BuildContext context, String title, String message) {
-    if(_curUrl=="http://www.clwztc.com/wap"){
-      new Future.value(true);
-    }else{
-      if (_webViewController != null) {
-        _webViewController.canGoBack().then((value) {
-          if (value) {
-            _webViewController.goBack();
-          } else {
-            new Future.value(true);
-          }
-        });
-      }
+  doCall(url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
     }
-
   }
 
   Widget _progressBar() {
