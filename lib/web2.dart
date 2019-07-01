@@ -12,7 +12,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: MaterialApp(
-        title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
@@ -34,7 +33,6 @@ class WebViewPageState extends State<WebViewPage> {
   Timer _timer;
   int progress = 0;
   WebViewController _webViewController;
-  String _curUrl;
 
   static Future<void> pop() async {
     await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
@@ -102,7 +100,16 @@ class WebViewPageState extends State<WebViewPage> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Flutter WebView example'),
+            leading: Icon(
+              Icons.call,
+              color: Colors.white,
+            ),
+            title: GestureDetector(
+              child: Text("电话：13522884566"),
+              onTap: () {
+                doCall("tel:13522884566");
+              },
+            ),
             bottom: PreferredSize(
               child: _progressBar(),
               preferredSize: Size.fromHeight(2.0),
@@ -134,7 +141,6 @@ class WebViewPageState extends State<WebViewPage> {
                   progress = 0;
                   _simulateProgress();
                 });
-                _curUrl = request.url;
                 print('allowing navigation to $request');
 
                 return NavigationDecision.navigate;
